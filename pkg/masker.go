@@ -17,7 +17,11 @@ func Run(path_read, path_write string) error {
 		log.Println("error opening the file", err)
 		return err
 	}
-	svc.pres.presenter(data)
+	err = svc.pres.presenter(data)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 	return nil
 }
 
