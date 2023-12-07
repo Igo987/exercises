@@ -7,17 +7,18 @@ import (
 
 type Service struct {
 	prod Produce
-	pres presenty
+	pres Present
 }
 
-func Run(path_read, path_write string) error {
-	svc := NewService(path_read, path_write)
-	data, err := svc.prod.produce()
+func (s *Service) Run(path_read, path_write string) error {
+	s.prod.path = path_read
+	s.pres.path = path_write
+	data, err := s.prod.produce()
 	if err != nil {
 		log.Println("error opening the file", err)
 		return err
 	}
-	err = svc.pres.presenter(data)
+	err = s.pres.presenter(data)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -26,24 +27,27 @@ func Run(path_read, path_write string) error {
 }
 
 // Service constructor
-func NewService(path_read, path_write string) *Service {
+func NewService(r Produce, w Present) *Service {
 	svc := new(Service)
-	svc.prod.path = path_read
-	svc.pres.path = path_write
 	return svc
 }
 
 // result handler (writing to a file)
-type Present interface {
-	presenter(s []string) (err error)
+type Presenter interface {
+	present(s []string) (err error)
 }
 
-type presenty struct {
-	Present
+type Present struct {
 	path string
 }
 
-func (p presenty) presenter(s []string) error {
+// Present constructor
+func NewPresent() *Present {
+	prznt := new(Present)
+	return prznt
+}
+
+func (p Present) presenter(s []string) error {
 	f, err := os.Create(p.path)
 	if err != nil {
 		log.Println("error creating the file", err)
