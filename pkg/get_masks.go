@@ -3,7 +3,7 @@ package masker
 const star = "*"
 const URL = "http://"
 
-func GetMasks(text, separator string) (new string) { // можно было вторым возвращаемым значением задать error, но не придумал что может пойти не так
+func GetMasks(text, separator string) (new string) {
 	someFlag := false
 	buffer := make([][]string, 0)
 	word := make([]string, 0)
@@ -35,7 +35,7 @@ func GetMasks(text, separator string) (new string) { // можно было вт
 				}
 			}
 		}
-		if len(w) <= len(httpURL)+4 { // да, число 4 магическое: (если после httpURL(http://) меньше 5 символов,то, ну наверное, это не URL адрес и можно это слово не проверять)
+		if len(w) <= len(httpURL)+4 {
 			for _, oneWord := range w {
 				word := []byte(oneWord)
 				bytes = append(bytes, word...)
