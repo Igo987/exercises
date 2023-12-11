@@ -26,18 +26,17 @@ func getResult(linksList []string) <-chan string {
 	res := make(chan string, len(linksList))
 	link := make(chan string)
 	allLinks := getLinks(linksList)
-	wg.Add(len(linksList) * 2)
-
 	for i := range allLinks {
+		wg.Add(2)
+		i := i
 		go func(u string) {
 			link <- u
 			defer wg.Done()
 		}(i)
-
-		go func() {
-			res <- GetMasks(<-link, URL)
+		go func(s chan string) {
+			res <- GetMasks(s, URL)
 			defer wg.Done()
-		}()
+		}(link)
 	}
 	wg.Wait()
 	return res

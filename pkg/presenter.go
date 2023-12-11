@@ -27,7 +27,7 @@ func (s *Service) Run(path_read, path_write string) error {
 }
 
 // Service constructor
-func NewService(r Produce, w Present) *Service {
+func NewService(r *Produce, w *Present) *Service {
 	svc := new(Service)
 	return svc
 }

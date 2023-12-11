@@ -13,7 +13,7 @@ func main() {
 	flag.Parse()
 	someProd := masker.NewProduce()
 	somePres := masker.NewPresent()
-	newService := masker.NewService(*someProd, *somePres)
+	newService := masker.NewService(someProd, somePres)
 	err := newService.Run(*path_read, *path_write)
 	if err != nil {
 		err = fmt.Errorf("an error occurred when starting the service: %s", err)
