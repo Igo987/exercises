@@ -7,7 +7,7 @@ type Service struct {
 	pres Presenter
 }
 
-// Service constructor
+/* Service constructor */
 func NewService(r Presenter, w Producer) *Service {
 	svc := new(Service)
 	svc.prod = w
