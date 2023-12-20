@@ -3,8 +3,10 @@ package masker
 const star = "*"
 const URL = "http://"
 
-func GetMasks(link chan string, separator string) (new string) {
+func GetMasks(link <-chan string, separator string) chan string {
+	newLink := make(chan string)
 	text := <-link
+	anyFlag := make(chan bool)
 	someFlag := false
 	buffer := make([][]string, 0)
 	word := make([]string, 0)
@@ -65,7 +67,18 @@ func GetMasks(link chan string, separator string) (new string) {
 			bytes = append(bytes, space...)
 		}
 	}
-	new = string(bytes)
+	stringRes := string(bytes)
 
-	return new
+	go func() {
+		newLink <- stringRes
+		anyFlag <- true
+
+	}()
+
+	go func() {
+		<-anyFlag
+		close(newLink)
+	}()
+
+	return newLink
 }

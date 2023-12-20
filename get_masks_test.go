@@ -4,7 +4,7 @@ import (
 	"sync"
 	"testing"
 
-	masker "github.com/Igo87/project/pkg"
+	masker "github.com/Igo87/project/masker"
 )
 
 var wait sync.WaitGroup
@@ -43,12 +43,11 @@ func TestGetMasks(t *testing.T) {
 			defer wait.Done()
 		}()
 		result := masker.GetMasks(tc.input, separator)
-		if result != tc.expected {
-			t.Errorf("MyFunction(%v) = %s; want %s", tc.input, result, tc.expected)
+		if <-result != tc.expected {
+			t.Errorf("MyFunction(%v) = %d; want %s", tc.input, result, tc.expected)
 		}
 	}
 	go func() {
-
 		wait.Wait()
 	}()
 }

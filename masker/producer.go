@@ -4,11 +4,7 @@ import (
 	"bufio"
 	"log"
 	"os"
-	"sync"
 )
-
-var wg sync.WaitGroup
-var chanWg sync.WaitGroup
 
 // we read the links and send them to the channel
 func getLinks(links []string) <-chan string {
@@ -22,33 +18,13 @@ func getLinks(links []string) <-chan string {
 	return out
 }
 
-func getResult(linksList []string) <-chan string {
-	res := make(chan string, len(linksList))
-	link := make(chan string)
-	allLinks := getLinks(linksList)
-	for i := range allLinks {
-		wg.Add(2)
-		i := i
-		go func(u string) {
-			link <- u
-			defer wg.Done()
-		}(i)
-		go func(s chan string) {
-			res <- GetMasks(s, URL)
-			defer wg.Done()
-		}(link)
-	}
-	wg.Wait()
-	return res
-}
-
 // data provider (reading from a file)
 type Producer interface {
 	produce() (data []string, e error)
 }
 
 type Produce struct {
-	path string
+	Path string
 }
 
 // Produce constructor
@@ -58,10 +34,11 @@ func NewProduce() *Produce {
 }
 
 func (p Produce) produce() ([]string, error) {
-	file, err := os.Open(p.path)
+	file, err := os.Open(p.Path)
 	line_list := []string{}
-	result := []string{}
-
+	result := make([]string, len(line_list))
+	someLink := make(chan string)
+	someFlag := make(chan bool)
 	if err != nil {
 		log.Println("error opening the file", err)
 		return line_list, err
@@ -78,14 +55,20 @@ func (p Produce) produce() ([]string, error) {
 		log.Println("error reading file", err)
 		return line_list, err
 	}
-	res := getResult(line_list)
-	chanWg.Add(len(line_list))
-	go func() {
-		for item := range res {
-			result = append(result, item)
-			chanWg.Done()
-		}
-	}()
-	chanWg.Wait()
+
+	res := getLinks(line_list)
+	for i := range res {
+		go func(s string) {
+			someLink <- s
+			someFlag <- true
+		}(i)
+
+		someRes := GetMasks(someLink, URL)
+		go func() {
+			<-someFlag
+			result = append(result, <-someRes)
+		}()
+	}
+
 	return result, nil
 }
