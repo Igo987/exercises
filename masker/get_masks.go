@@ -3,7 +3,7 @@ package masker
 const star = "*"
 const URL = "http://"
 
-func GetMasks(link <-chan string, separator string) chan string {
+func GetMasks(link <-chan string, url string) chan string {
 	newLink := make(chan string)
 	text := <-link
 	anyFlag := make(chan bool)
@@ -13,7 +13,7 @@ func GetMasks(link <-chan string, separator string) chan string {
 	bytes := make([]byte, 0)
 	httpURL := make([]string, 0)
 
-	for _, item := range separator {
+	for _, item := range url {
 		httpURL = append(httpURL, string(item))
 	}
 	for index, item := range text {

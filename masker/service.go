@@ -1,6 +1,6 @@
 package masker
 
-import "log"
+import "fmt"
 
 type Service struct {
 	prod Producer
@@ -18,13 +18,11 @@ func NewService(r Presenter, w Producer) *Service {
 func (s *Service) Run() error {
 	data, err := s.prod.produce()
 	if err != nil {
-		log.Println("error opening the file", err)
-		return err
+		return fmt.Errorf("error opening the file: %w", err)
 	}
 	err = s.pres.present(data)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("error presenting data: %w", err)
 	}
 	return nil
 }

@@ -1,16 +1,17 @@
-package main
+package masker
 
 import (
 	"sync"
 	"testing"
 
-	masker "github.com/Igo87/project/masker"
+	"github.com/stretchr/testify/assert"
 )
 
 var wait sync.WaitGroup
 
+const separator = "http://"
+
 func TestGetMasks(t *testing.T) {
-	separator := "http://"
 	/* tabular testing */
 	testCases := []struct {
 		input    chan string
@@ -42,10 +43,8 @@ func TestGetMasks(t *testing.T) {
 			close(tc.input)
 			defer wait.Done()
 		}()
-		result := masker.GetMasks(tc.input, separator)
-		if <-result != tc.expected {
-			t.Errorf("MyFunction(%v) = %d; want %s", tc.input, result, tc.expected)
-		}
+		result := GetMasks(tc.input, separator)
+		assert.Equal(t, tc.expected, <-result)
 	}
 	go func() {
 		wait.Wait()

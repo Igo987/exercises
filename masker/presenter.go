@@ -1,7 +1,8 @@
 package masker
 
 import (
-	"log"
+	"bufio"
+	"fmt"
 	"os"
 )
 
@@ -16,23 +17,25 @@ type Present struct {
 
 // Present constructor
 func NewPresent() *Present {
-	prznt := new(Present)
-	return prznt
+	return &Present{}
 }
 
 func (p Present) present(s []string) error {
 	f, err := os.Create(p.Path)
 	if err != nil {
-		log.Println("error creating the file", err)
-		return err
+		return fmt.Errorf("error creating the file: %w", err)
 	}
 	defer f.Close()
+
+	writer := bufio.NewWriter(f)
 	for _, line := range s {
-		_, err := f.WriteString(line + "\n")
+		_, err := writer.WriteString(line + "\n")
 		if err != nil {
-			log.Println("error when writing to a file", err)
-			return err
+			return fmt.Errorf("error when writing to a file: %w", err)
 		}
+	}
+	if err := writer.Flush(); err != nil {
+		return fmt.Errorf("error flushing the writer: %w", err)
 	}
 	return nil
 }

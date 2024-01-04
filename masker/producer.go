@@ -4,16 +4,17 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"sync"
 )
 
 // we read the links and send them to the channel
 func getLinks(links []string) <-chan string {
-	out := make(chan string)
+	out := make(chan string, len(links))
 	go func() {
+		defer close(out)
 		for _, n := range links {
 			out <- n
 		}
-		close(out)
 	}()
 	return out
 }
@@ -29,46 +30,46 @@ type Produce struct {
 
 // Produce constructor
 func NewProduce() *Produce {
-	prdc := new(Produce)
-	return prdc
+	return &Produce{}
 }
 
 func (p Produce) produce() ([]string, error) {
 	file, err := os.Open(p.Path)
-	line_list := []string{}
-	result := make([]string, len(line_list))
-	someLink := make(chan string)
-	someFlag := make(chan bool)
 	if err != nil {
 		log.Println("error opening the file", err)
-		return line_list, err
+		return nil, err
 	}
-
 	defer file.Close()
+
 	scanner := bufio.NewScanner(file)
+	lineList := make([]string, 0, 100)
 	for scanner.Scan() {
-		line := scanner.Text()
-		line_list = append(line_list, line)
+		lineList = append(lineList, scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
 		log.Println("error reading file", err)
-		return line_list, err
+		return nil, err
 	}
 
-	res := getLinks(line_list)
-	for i := range res {
-		go func(s string) {
-			someLink <- s
-			someFlag <- true
-		}(i)
+	result := make([]string, 0, len(lineList))
 
-		someRes := GetMasks(someLink, URL)
-		go func() {
-			<-someFlag
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
+	for _, line := range lineList {
+		wg.Add(1)
+		go func(l string) {
+			defer wg.Done()
+			someCh := getLinks([]string{l})
+			someRes := GetMasks(someCh, URL)
+			mu.Lock()
+			defer mu.Unlock()
 			result = append(result, <-someRes)
-		}()
+		}(line)
 	}
+
+	wg.Wait()
 
 	return result, nil
 }

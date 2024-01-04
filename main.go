@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-
 	masker "github.com/Igo87/project/masker"
 )
 
