@@ -48,11 +48,11 @@ func (p *mockService) Run() error {
 func TestNewService(t *testing.T) {
 	r := &mockPresenter{}
 	w := &mockProducer{}
-
 	svc := NewService(r, w)
-
 	assert.Equal(t, w, svc.prod, "prod must have a method produce() that returns []string and an error")
 	assert.Equal(t, r, svc.pres, "pres must have a method present(s []string) that returns an error")
+	assert.NotNil(t, svc, "service must not be nil")
+	assert.NoError(t, svc.Run())
 
 }
 
