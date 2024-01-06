@@ -56,32 +56,44 @@ func TestNewService(t *testing.T) {
 
 }
 
-// TestRun tests the Run method of the Service struct.
 func TestService_Run(t *testing.T) {
-	myMock := &mockService{}
-	// Test case 1: Successful execution
-	myMock.On("produce").Return([]string{
-		"http://************",
-		"there is not a single link here",
-		"And here is the link to http://*****************",
-	}, nil)
-	myMock.On("present").Return(nil)
-	err := myMock.Run()
-	assert.NoError(t, err)
+	/* tabular testing */
 
-	// Test case 2: Error producing data
-	expectedProducerError := errors.New("error producing data")
-	myMock.On("produce").Return(nil, err)
-	err = myMock.Run()
-	assert.Error(t, expectedProducerError, err)
+	testCases := []struct {
+		input    []string
+		expected []string
+		err      error
+	}{
+		{
+			input:    []string{"http://google.com", "there is not a single link here", "And here is the link to http://stackoverflow.com"},
+			expected: []string{"http://************", "there is not a single link here", "And here is the link to http://*****************"},
+			err:      nil,
+		},
+		{
+			input:    []string{"http://google.com", "there is not a single link here"},
+			expected: []string{"http://************", "there is not a single link here"},
+			err:      nil,
+		},
+		{
+			input:    []string{"http://google.com", "there is not a single link here", "And here is the link to http://stackoverflow.com"},
+			expected: nil,
+			err:      errors.New("error producing data"),
+		},
+		{
+			input:    []string{},
+			expected: nil,
+			err:      nil,
+		},
+	}
 
-	// Test case 3: Error presenting data
-	expectedError := errors.New("error presenting data")
-	myMock.On("present", []string{
-		"http://google.com",
-		"there is not a single link here",
-		"And here is the link to http://stackoverflow.com",
-	}).Return(expectedError)
-	err = myMock.Run()
-	assert.Error(t, expectedError, err)
+	for _, tc := range testCases {
+		tc := tc
+		myMock := &mockService{
+			err: tc.err,
+		}
+		myMock.On("produce").Return(tc.input, tc.err)
+		myMock.On("present", tc.expected).Return(tc.err)
+		err := myMock.Run()
+		assert.Equal(t, err, tc.err)
+	}
 }
