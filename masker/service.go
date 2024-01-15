@@ -1,7 +1,5 @@
 package masker
 
-import "fmt"
-
 type Service struct {
 	prod Producer
 	pres Presenter
@@ -9,7 +7,7 @@ type Service struct {
 
 /* Service constructor */
 func NewService(r Presenter, w Producer) *Service {
-	svc := new(Service)
+	var svc *Service = new(Service)
 	svc.prod = w
 	svc.pres = r
 	return svc
@@ -18,11 +16,11 @@ func NewService(r Presenter, w Producer) *Service {
 func (s *Service) Run() error {
 	data, err := s.prod.produce()
 	if err != nil {
-		return fmt.Errorf("error opening the file: %w", err)
+		return err
 	}
 	err = s.pres.present(data)
 	if err != nil {
-		return fmt.Errorf("error presenting data: %w", err)
+		return err
 	}
 	return nil
 }

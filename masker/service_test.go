@@ -8,92 +8,93 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type mockService struct {
-	mock.Mock
-	err error
-}
 type mockPresenter struct {
-	err error
+	mock.Mock
 }
 
 type mockProducer struct {
-	err error
+	mock.Mock
 }
 
+// produce is a strongly typed function that returns a slice of strings and an error.
 func (p *mockProducer) produce() ([]string, error) {
-	return nil, p.err
-}
-
-func (p *mockPresenter) present(data []string) error {
-	return p.err
-}
-
-func (s *mockService) produce() ([]string, error) {
-	args := s.Called()
+	args := p.Called()
 	return args.Get(0).([]string), args.Error(1)
 }
 
-func (s *mockService) present(any []string) error {
-	args := s.Called(any)
+func (p *mockPresenter) present(data []string) error {
+	args := p.Called(data)
 	return args.Error(0)
 }
 
-func (p *mockService) Run() error {
-	if p.err != nil {
-		return p.err
-	}
-	return nil
-}
-
 func TestNewService(t *testing.T) {
-	r := &mockPresenter{}
-	w := &mockProducer{}
-	svc := NewService(r, w)
-	assert.Equal(t, w, svc.prod, "prod must have a method produce() that returns []string and an error")
-	assert.Equal(t, r, svc.pres, "pres must have a method present(s []string) that returns an error")
-	assert.NotNil(t, svc, "service must not be nil")
-	assert.NoError(t, svc.Run())
+	// Define the test case
+	tc := struct {
+		Produce Producer
+		Present Presenter
+		want    *Service
+		error   error
+	}{
+		Produce: &mockProducer{},
+		Present: &mockPresenter{},
+		want: &Service{
+			prod: &mockProducer{},
+			pres: &mockPresenter{},
+		},
+		error: nil,
+	}
 
+	// Run the test case
+	got := NewService(tc.Present, tc.Produce)
+	assert.Equal(t, tc.want, got)
 }
 
 func TestService_Run(t *testing.T) {
 	/* tabular testing */
-
 	testCases := []struct {
-		input    []string
+		name     string
+		got      []string
 		expected []string
 		err      error
 	}{
 		{
-			input:    []string{"http://google.com", "there is not a single link here", "And here is the link to http://stackoverflow.com"},
-			expected: []string{"http://************", "there is not a single link here", "And here is the link to http://*****************"},
+			name:     "success",
+			expected: []string{"http://**********", "there is not a single link here", "And here is the link to http://*****************"},
+			got:      []string{"http://**********", "there is not a single link here", "And here is the link to http://*****************"},
 			err:      nil,
 		},
 		{
-			input:    []string{"http://google.com", "there is not a single link here"},
-			expected: []string{"http://************", "there is not a single link here"},
+			name:     "successToo",
+			expected: []string{"there is not a single link here"},
+			got:      []string{"there is not a single link here"},
 			err:      nil,
 		},
 		{
-			input:    []string{"http://google.com", "there is not a single link here", "And here is the link to http://stackoverflow.com"},
+			name:     "fail",
 			expected: nil,
+			got:      nil,
 			err:      errors.New("error producing data"),
 		},
 		{
-			input:    []string{},
+			name:     "failAgain",
+			expected: []string{"http://google.com"},
+			got:      []string{"http://google.com"},
+			err:      errors.New("error producing data"),
+		},
+		{
+			name:     "wantsNil",
 			expected: nil,
+			got:      nil,
 			err:      nil,
 		},
 	}
-
+	Service := NewService(&mockPresenter{}, &mockProducer{})
 	for _, tc := range testCases {
-		tc := tc
-		myMock := &mockService{
-			err: tc.err,
-		}
-		myMock.On("produce").Return(tc.input, tc.err)
-		myMock.On("present", tc.expected).Return(tc.err)
-		err := myMock.Run()
-		assert.Equal(t, err, tc.err)
+		t.Run(tc.name, func(t *testing.T) {
+			Service.prod.(*mockProducer).On("produce").Return(tc.expected, tc.err)
+			Service.pres.(*mockPresenter).On("present", tc.got).Return(tc.err)
+			assert.Equal(t, tc.expected, tc.got)
+
+		})
 	}
 }

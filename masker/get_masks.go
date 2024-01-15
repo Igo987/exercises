@@ -8,10 +8,10 @@ func GetMasks(link <-chan string, url string) chan string {
 	text := <-link
 	anyFlag := make(chan bool)
 	someFlag := false
-	buffer := make([][]string, 0)
-	word := make([]string, 0)
-	bytes := make([]byte, 0)
-	httpURL := make([]string, 0)
+	buffer := make([][]string, 0, 100)
+	word := make([]string, 0, 100)
+	bytes := make([]byte, 0, 100)
+	httpURL := make([]string, 0, 100)
 
 	for _, item := range url {
 		httpURL = append(httpURL, string(item))
@@ -74,7 +74,16 @@ func GetMasks(link <-chan string, url string) chan string {
 		anyFlag <- true
 
 	}()
-
+	// go func() {
+	// 	for {
+	// 		select {
+	// 		case <-anyFlag:
+	// 			close(newLink)
+	// 		default:
+	// 			log.Println("done")
+	// 		}
+	// 	}
+	// }()
 	go func() {
 		<-anyFlag
 		close(newLink)

@@ -2,9 +2,12 @@ package masker
 
 import (
 	"bufio"
+	"context"
+	"errors"
 	"log"
 	"os"
 	"sync"
+	"time"
 )
 
 // we read the links and send them to the channel
@@ -17,6 +20,25 @@ func getLinks(links []string) <-chan string {
 		}
 	}()
 	return out
+}
+
+var someCancel = make(chan struct{})
+
+// we cancel the context if we get a signal
+func Stop(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			someCancel <- struct{}{}
+			log.Println("programm was cancelled")
+			return
+		default:
+			time.Sleep(200 * time.Millisecond)
+			log.Println("so far, everything is working.It seems")
+		}
+
+	}
+
 }
 
 // data provider (reading from a file)
@@ -53,23 +75,32 @@ func (p Produce) produce() ([]string, error) {
 	}
 
 	result := make([]string, 0, len(lineList))
-
-	var wg sync.WaitGroup
+	wait := &sync.WaitGroup{}
 	var mu sync.Mutex
+	someCh := getLinks(lineList)
+	anotherCh := make(chan string)
 
-	for _, line := range lineList {
-		wg.Add(1)
-		go func(l string) {
-			defer wg.Done()
-			someCh := getLinks([]string{l})
-			someRes := GetMasks(someCh, URL)
-			mu.Lock()
-			defer mu.Unlock()
-			result = append(result, <-someRes)
-		}(line)
+	for {
+		select {
+		case l, ok := <-someCh:
+			if !ok {
+				return result, nil
+			}
+			wait.Add(2)
+			go func() {
+				anotherCh <- l
+				defer wait.Done()
+			}()
+			go func() {
+				defer wait.Done()
+				defer mu.Unlock()
+				someRes := GetMasks(anotherCh, URL)
+				mu.Lock()
+				result = append(result, <-someRes)
+			}()
+			wait.Wait()
+		case <-someCancel:
+			return result, errors.New("the program was stopped by the user")
+		}
 	}
-
-	wg.Wait()
-
-	return result, nil
 }
