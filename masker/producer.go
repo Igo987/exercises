@@ -4,11 +4,14 @@ import (
 	"bufio"
 	"context"
 	"errors"
-	"log"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/Igo87/project/logger"
 )
+
+var log = logger.LogStart("slog.LevelDebug")
 
 // we read the links and send them to the channel
 func getLinks(links []string) <-chan string {
@@ -24,21 +27,21 @@ func getLinks(links []string) <-chan string {
 
 var someCancel = make(chan struct{})
 
-// we cancel the context if we get a signal
+// Stop cancels the context if we get a signal
 func Stop(ctx context.Context) {
+	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
 			someCancel <- struct{}{}
-			log.Println("programm was cancelled")
+			log.Warn("the program was interrupted by the user")
 			return
-		default:
-			time.Sleep(200 * time.Millisecond)
-			log.Println("so far, everything is working.It seems")
+		case <-ticker.C:
+			log.Info("the programm is still running")
 		}
-
 	}
-
 }
 
 // data provider (reading from a file)
@@ -58,7 +61,7 @@ func NewProduce() *Produce {
 func (p Produce) produce() ([]string, error) {
 	file, err := os.Open(p.Path)
 	if err != nil {
-		log.Println("error opening the file", err)
+		log.Error("error opening the file", err)
 		return nil, err
 	}
 	defer file.Close()
@@ -70,7 +73,7 @@ func (p Produce) produce() ([]string, error) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Println("error reading file", err)
+		log.Error("error reading file", err)
 		return nil, err
 	}
 
@@ -100,7 +103,7 @@ func (p Produce) produce() ([]string, error) {
 			}()
 			wait.Wait()
 		case <-someCancel:
-			return result, errors.New("the program was stopped by the user")
+			return result, errors.New("the program was interrupted by the user")
 		}
 	}
 }
