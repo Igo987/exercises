@@ -1,0 +1,16 @@
+level=DEBUG msg="programm was started" date.="17 января 2024" date.time=18:49:03
+level=INFO msg="successfully finished" date.="17 января 2024" date.time=18:49:03
+level=DEBUG msg="programm was started" date.="17 января 2024" date.time=18:50:41
+level=INFO msg="successfully finished" date.="17 января 2024" date.time=18:50:41
+level=DEBUG msg="programm was started" date.="17 января 2024" date.time=18:53:16
+level=INFO msg="successfully finished" date.="17 января 2024" date.time=18:53:16
+level=DEBUG msg="programm was started" date.="17 января 2024" date.time=19:03:58
+level=INFO msg="successfully finished" date.="17 января 2024" date.time=19:03:58
+level=DEBUG msg="programm was started" date.="17 января 2024" date.time=19:04:39
+level=INFO msg="successfully finished" date.="17 января 2024" date.time=19:04:39
+level=DEBUG msg="programm was started" date.="17 января 2024" date.time=19:05:02
+level=INFO msg="successfully finished" date.="17 января 2024" date.time=19:05:02
+level=DEBUG msg="programm was started" date.="17 января 2024" date.time=20:12:27
+level=INFO msg="successfully finished" date.="17 января 2024" date.time=20:12:27
+level=DEBUG msg="programm was started" date.="17 января 2024" date.time=20:13:34
+level=INFO msg="successfully finished" date.="17 января 2024" date.time=20:13:34
