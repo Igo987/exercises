@@ -78,7 +78,7 @@ func doAllWorks(c *cli.Context) error {
 		log.Error("error when reading the config file", err)
 	}
 
-	logFile, err := openLogFile(cfg.GetPathToLogFile())
+	logFile, err := logger.OpenLogFile(cfg.GetPathToLogFile())
 	if err != nil {
 		log.Error("error when opening the log file", err)
 	}
@@ -100,12 +100,4 @@ func doAllWorks(c *cli.Context) error {
 		log.Info("successfully finished")
 	}
 	return nil
-}
-
-func openLogFile(filePath string) (*os.File, error) {
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	if err != nil {
-		return nil, err
-	}
-	return file, nil
 }

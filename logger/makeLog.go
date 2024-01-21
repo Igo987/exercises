@@ -33,7 +33,7 @@ func LogStart(level string) *slog.Logger {
 		programLevel.Set(slog.LevelWarn)
 	case "slog.LevelError":
 		programLevel.Set(slog.LevelError)
-		default:
+	default:
 		programLevel.Set(slog.LevelDebug)
 	}
 	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -55,4 +55,12 @@ func WriteLogInTheFile(f *os.File) *slog.Logger {
 	slog.SetDefault(logger)
 	newLogger := logger.With(ConfigureTime)
 	return newLogger
+}
+
+func OpenLogFile(filePath string) (*os.File, error) {
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
 }

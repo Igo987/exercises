@@ -104,6 +104,7 @@ func (p Produce) produce() ([]string, error) {
 			wait.Wait()
 		case <-someCancel:
 			return result, errors.New("the program was interrupted by the user")
+
 		}
 	}
 }

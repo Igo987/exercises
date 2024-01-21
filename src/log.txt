@@ -14,3 +14,5 @@ level=DEBUG msg="programm was started" date.="17 января 2024" date.time=20
 level=INFO msg="successfully finished" date.="17 января 2024" date.time=20:12:27
 level=DEBUG msg="programm was started" date.="17 января 2024" date.time=20:13:34
 level=INFO msg="successfully finished" date.="17 января 2024" date.time=20:13:34
+level=DEBUG msg="programm was started" date.="17 января 2024" date.time=20:42:29
+level=INFO msg="successfully finished" date.="17 января 2024" date.time=20:42:29
