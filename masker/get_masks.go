@@ -74,16 +74,6 @@ func GetMasks(link <-chan string, url string) chan string {
 		anyFlag <- true
 
 	}()
-	// go func() {
-	// 	for {
-	// 		select {
-	// 		case <-anyFlag:
-	// 			close(newLink)
-	// 		default:
-	// 			log.Println("done")
-	// 		}
-	// 	}
-	// }()
 	go func() {
 		<-anyFlag
 		close(newLink)
